@@ -1,0 +1,87 @@
+# --- Powerlevel10k Instant Prompt (must be at the very top, no output above) ---
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# --- PATH Setup ---
+export PATH="$HOME/bin:/usr/local/bin:$PATH"
+export PATH="$PATH:/Users/espejelomar/.starklings/dist/starklings:/Users/espejelomar/.protostar/dist/protostar:/Users/espejelomar/.foundry/bin:$HOME/.cairo/target/release:$HOME/.local/bin:$HOME/.bun/bin:/Users/espejelomar/.modular/pkg/packages.modular.com_mojo/bin"
+
+# --- Oh My Zsh ---
+export ZSH="$HOME/.oh-my-zsh"
+source $ZSH/oh-my-zsh.sh
+ZSH_THEME="powerlevel10k/powerlevel10k"  # Switched to Powerlevel10k for better customization
+plugins=(git z fzf docker history-substring-search tmux zoxide)  # Added tmux and zoxide plugins
+
+
+# --- Powerlevel10k Theme ---
+source ~/powerlevel10k/powerlevel10k.zsh-theme
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# --- Programming Environment Managers ---
+# Pyenv
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init --path)"
+  eval "$(pyenv virtualenv-init -)"
+fi
+
+# chruby (Ruby version manager)
+if [ -f /opt/homebrew/opt/chruby/share/chruby/chruby.sh ]; then
+  source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
+  source /opt/homebrew/opt/chruby/share/chruby/auto.sh
+  # chruby ruby-3.1.1   # Uncomment if you have this version installed
+fi
+
+# asdf (Universal version manager)
+if [ -f "$HOME/.asdf/asdf.sh" ]; then
+  . "$HOME/.asdf/asdf.sh"
+  fpath=(${ASDF_DIR}/completions $fpath)
+  autoload -Uz compinit && compinit
+fi
+
+# NVM (Node Version Manager)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# --- Other Environment Variables ---
+export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
+export BUN_INSTALL="$HOME/.bun"
+export MODULAR_HOME="/Users/espejelomar/.modular"
+
+# --- Custom Scripts & Completions ---
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh  # Fuzzy finder keybindings
+[ -s "/Users/espejelomar/.bun/_bun" ] && source "/Users/espejelomar/.bun/_bun"
+[ -f "/Users/espejelomar/.starkli/env" ] && . "/Users/espejelomar/.starkli/env"
+
+# --- Aliases (Hacker Workflow Essentials) ---
+alias ls='eza -la --icons --git'      # Modern ls with Git integration
+alias cat='bat --paging=never'        # Syntax-highlighted cat
+alias grep='rg'                       # Faster grep replacement
+alias tm='tmux new -A -s main'        # Tmux session manager
+alias lg='lazygit'                    # Git TUI
+alias j='jq'                          # JSON processor
+alias z='zoxide'                      # Smarter directory navigation
+alias top='htop'                      # Interactive process viewer
+alias vim='nvim'                      # NeoVim for modern editing
+
+# --- Editor ---
+export EDITOR='nvim'  # Use NeoVim as default editor
+
+# --- Tool Initializations ---
+eval "$(zoxide init zsh)"  # Initialize zoxide (smarter cd)
+
+# --- Miscellaneous ---
+export LANG=en_US.UTF-8
+
+# --- Go Path ---
+if command -v go 1>/dev/null 2>&1; then
+  export PATH="$PATH:$(go env GOPATH)/bin"
+fi
+
+# Auto-start tmux only if running in an interactive terminal and not already in tmux
+if command -v tmux >/dev/null 2>&1; then
+  if [ -t 1 ] && [ -z "$TMUX" ]; then
+    tmux attach-session -t main || tmux new-session -s main
+  fi
+fi
